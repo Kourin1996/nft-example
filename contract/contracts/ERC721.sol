@@ -36,7 +36,11 @@ contract ERC721 is IERC721, IERC721Metadata, ERC165 {
         _;
     }
 
-    modifier canTransfer(uint256 _tokenId) {
+    modifier canTransfer(
+        address _from,
+        address _to,
+        uint256 _tokenId
+    ) {
         address tokenOwner = _idToOwner[_tokenId];
 
         require(
@@ -44,6 +48,10 @@ contract ERC721 is IERC721, IERC721Metadata, ERC165 {
                 _idToApproval[_tokenId] == msg.sender ||
                 _ownerToOperators[tokenOwner][msg.sender],
             "Not allowed to transfer"
+        );
+        require(
+            _to != address(0),
+            "Destination address must not be zero address"
         );
         _;
     }
@@ -131,7 +139,12 @@ contract ERC721 is IERC721, IERC721Metadata, ERC165 {
         address _to,
         uint256 _tokenId,
         bytes memory _data
-    ) external override validNFToken(_tokenId) canTransfer(_tokenId) {
+    )
+        external
+        override
+        validNFToken(_tokenId)
+        canTransfer(_from, _to, _tokenId)
+    {
         _safeTransferFrom(_from, _to, _tokenId, _data);
     }
 
@@ -139,7 +152,12 @@ contract ERC721 is IERC721, IERC721Metadata, ERC165 {
         address _from,
         address _to,
         uint256 _tokenId
-    ) external override validNFToken(_tokenId) canTransfer(_tokenId) {
+    )
+        external
+        override
+        validNFToken(_tokenId)
+        canTransfer(_from, _to, _tokenId)
+    {
         _safeTransferFrom(_from, _to, _tokenId, "");
     }
 
@@ -147,14 +165,12 @@ contract ERC721 is IERC721, IERC721Metadata, ERC165 {
         address _from,
         address _to,
         uint256 _tokenId
-    ) external override validNFToken(_tokenId) canTransfer(_tokenId) {
-        address tokenOwner = _idToOwner[_tokenId];
-        require(tokenOwner == _from, "Not owner of NFT");
-        require(
-            _to != address(0),
-            "Destination address must not be zero address"
-        );
-
+    )
+        external
+        override
+        validNFToken(_tokenId)
+        canTransfer(_from, _to, _tokenId)
+    {
         _transfer(_to, _tokenId);
     }
 
